@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Интерактивный тест по цифровой грамотности и безопасности в интернете.">
+  <title>Цифровой детектив — интерактивный тест</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #0d1020;
+      --panel: rgba(24, 29, 52, .88);
+      --panel-light: #202744;
+      --text: #f4f5ff;
+      --muted: #a4abc7;
+      --accent: #b7f36b;
+      --accent-dark: #8fca43;
+      --purple: #a99aff;
+      --line: rgba(255,255,255,.10);
+      --danger: #ff858f;
+      --success: #b7f36b;
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(125, 105, 255, .20), transparent 35%),
+        radial-gradient(ellipse at 90% 85%, rgba(183, 243, 107, .10), transparent 30%),
+        var(--bg);
+      font-family: "DM Sans", sans-serif;
+      padding: 28px 18px 44px;
+    }
+    button { font: inherit; }
+    .page { width: min(100%, 900px); margin: 0 auto; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom: 38px; }
+    .brand { display:flex; align-items:center; gap:11px; font-family:Manrope,sans-serif; font-weight:800; letter-spacing:-.5px; }
+    .brand-mark {
+      width:38px; height:38px; border-radius:13px; display:grid; place-items:center;
+      color:#111629; background:var(--accent); font-size:19px; box-shadow:0 0 28px rgba(183,243,107,.2);
+    }
+    .top-note { color:var(--muted); font-size:13px; }
+    .hero { text-align:center; margin: 0 auto 28px; max-width:690px; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px; color:var(--accent);
+      border:1px solid rgba(183,243,107,.25); background:rgba(183,243,107,.07);
+      padding:8px 13px; border-radius:30px; font-size:12px; font-weight:700;
+      letter-spacing:1.2px; text-transform:uppercase;
+    }
+    h1,h2,h3 { font-family:Manrope,sans-serif; }
+    h1 { font-size:clamp(34px,6vw,58px); line-height:1.05; letter-spacing:-2.5px; margin:19px 0 14px; }
+    h1 span { color:var(--accent); }
+    .hero p { color:var(--muted); font-size:16px; line-height:1.7; margin:0; }
+    .quiz-shell {
+      background:linear-gradient(145deg, rgba(30,36,65,.96), rgba(19,24,45,.96));
+      border:1px solid var(--line); border-radius:27px; padding:clamp(20px,4vw,36px);
+      box-shadow:var(--shadow); position:relative; overflow:hidden;
+    }
+    .quiz-shell:before {
+      content:""; position:absolute; width:240px; height:240px; border-radius:50%;
+      background:rgba(169,154,255,.07); filter:blur(2px); right:-120px; top:-140px; pointer-events:none;
+    }
+    .meta-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:13px; }
+    .question-count { color:var(--muted); font-size:13px; font-weight:700; letter-spacing:.7px; text-transform:uppercase; }
+    .question-count strong { color:var(--text); }
+    .timer-label { color:var(--muted); font-size:12px; }
+    .progress-track { height:7px; border-radius:20px; background:rgba(255,255,255,.08); overflow:hidden; margin-bottom:30px; }
+    .progress-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--purple),var(--accent)); border-radius:20px; transition:width .35s ease; }
+    .question-tag { color:var(--purple); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; margin-bottom:10px; }
+    .question-title { font-size:clamp(21px,3.4vw,29px); line-height:1.3; letter-spacing:-.7px; margin:0 0 23px; }
+    .answers { display:grid; gap:11px; }
+    .answer {
+      display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+      padding:15px 17px; border:1px solid var(--line); border-radius:15px;
+      color:var(--text); background:rgba(255,255,255,.035); cursor:pointer;
+      transition:transform .18s,border-color .18s,background .18s;
+    }
+    .answer:hover { transform:translateY(-2px); border-color:rgba(169,154,255,.65); background:rgba(169,154,255,.08); }
+    .answer:focus-visible,.btn:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .answer.selected { border-color:var(--accent); background:rgba(183,243,107,.10); }
+    .answer-letter {
+      width:31px; height:31px; flex:0 0 31px; border-radius:10px; display:grid; place-items:center;
+      color:var(--muted); background:rgba(255,255,255,.07); font-size:13px; font-weight:700;
+    }
+    .answer.selected .answer-letter { color:#111629; background:var(--accent); }
+    .answer-text { font-size:14px; line-height:1.5; }
+    .feedback { display:none; margin-top:18px; border-radius:13px; padding:13px 15px; font-size:13px; line-height:1.55; }
+    .feedback.show { display:block; }
+    .feedback.good { color:#d9ffad; background:rgba(183,243,107,.09); border:1px solid rgba(183,243,107,.22); }
+    .feedback.bad { color:#ffc0c5; background:rgba(255,133,143,.08); border:1px solid rgba(255,133,143,.2); }
+    .controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:27px; }
+    .hint { color:var(--muted); font-size:12px; }
+    .btn {
+      border:0; border-radius:13px; padding:13px 20px; font-weight:700; cursor:pointer;
+      transition:transform .18s,opacity .18s,background .18s;
+    }
+    .btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .btn:disabled { opacity:.38; cursor:not-allowed; }
+    .btn-primary { color:#111629; background:var(--accent); }
+    .btn-primary:hover:not(:disabled) { background:#c8ff82; }
+    .btn-secondary { color:var(--text); background:rgba(255,255,255,.08); border:1px solid var(--line); }
+    .screen { display:none; }
+    .screen.active { display:block; animation:appear .35s ease; }
+    @keyframes appear { from {opacity:0;transform:translateY(8px)} to {opacity:1;transform:translateY(0)} }
+    .start-card,.result-card { text-align:center; }
+    .big-icon {
+      width:76px;height:76px;border-radius:24px;margin:0 auto 20px;display:grid;place-items:center;
+      font-size:34px;background:linear-gradient(145deg,rgba(169,154,255,.2),rgba(183,243,107,.13));
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .start-card h2,.result-card h2 { font-size:clamp(27px,4vw,38px); letter-spacing:-1.2px; margin:0 0 12px; }
+    .start-card p,.result-subtitle { color:var(--muted); max-width:570px; margin:0 auto; line-height:1.7; font-size:15px; }
+    .features { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin:25px 0 28px; }
+    .feature { color:#d7daf0; background:rgba(255,255,255,.055); border:1px solid var(--line); padding:9px 13px; border-radius:30px; font-size:12px; }
+    .start-card .btn { min-width:190px; }
+    .name-field { display:block; width:min(100%,390px); margin:22px auto 0; text-align:left; }
+    .name-field label { display:block; color:var(--muted); font-size:12px; font-weight:700; margin:0 0 8px 3px; }
+    .name-field input { width:100%; border:1px solid var(--line); border-radius:13px; padding:14px 15px; color:var(--text); background:rgba(255,255,255,.06); font:inherit; outline:none; }
+    .name-field input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(183,243,107,.10); }
+    .save-status { min-height:20px; color:var(--muted); font-size:12px; margin:12px 0 0; }
+    .leaderboard-list { display:grid; gap:9px; margin-top:18px; }
+    .leader-row { display:grid; grid-template-columns:38px 1fr auto; gap:12px; align-items:center; padding:13px 15px; border:1px solid var(--line); background:rgba(255,255,255,.04); border-radius:13px; text-align:left; }
+    .leader-place { width:30px; height:30px; display:grid; place-items:center; border-radius:10px; background:rgba(169,154,255,.13); color:var(--purple); font-weight:800; font-size:12px; }
+    .leader-name { font-weight:700; font-size:13px; overflow-wrap:anywhere; }
+    .leader-date { color:var(--muted); font-size:11px; margin-top:3px; }
+    .leader-score { color:var(--accent); font:800 17px Manrope,sans-serif; white-space:nowrap; }
+    .empty-state { color:var(--muted); padding:25px 10px; text-align:center; font-size:13px; }
+    .config-warning { color:#ffd69a; font-size:12px; line-height:1.5; margin:12px auto 0; max-width:430px; }
+    .result-score {
+      width:154px;height:154px;border-radius:50%;margin:25px auto 20px;
+      display:grid;place-items:center;position:relative;
+      background:conic-gradient(var(--accent) var(--score-angle,0deg),rgba(255,255,255,.09) 0);
+    }
+    .result-score:before { content:""; position:absolute; inset:9px; border-radius:50%; background:#171d36; }
+    .score-inner { position:relative; z-index:1; }
+    .score-number { display:block; font:800 38px Manrope,sans-serif; letter-spacing:-2px; }
+    .score-caption { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:1px; }
+    .result-category { display:inline-block; color:var(--accent); background:rgba(183,243,107,.08); border:1px solid rgba(183,243,107,.2); border-radius:30px; padding:8px 14px; font-size:12px; font-weight:700; margin:4px 0 13px; }
+    .result-details { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:25px 0; }
+    .stat { padding:15px 8px; border-radius:14px; background:rgba(255,255,255,.045); border:1px solid var(--line); }
+    .stat strong { display:block; font:800 23px Manrope,sans-serif; }
+    .stat span { color:var(--muted); font-size:11px; }
+    .recommendation { text-align:left; padding:18px; background:rgba(169,154,255,.07); border:1px solid rgba(169,154,255,.18); border-radius:16px; margin:20px 0 25px; }
+    .recommendation h3 { font-size:14px; margin:0 0 7px; }
+    .recommendation p { color:#c4c9e2; font-size:13px; line-height:1.65; margin:0; }
+    .result-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+    .footer { color:#737b9c; text-align:center; font-size:11px; margin-top:20px; }
+    .toast { min-height:18px; color:var(--danger); font-size:12px; text-align:right; }
+    @media (max-width:560px) {
+      body { padding:19px 12px 30px; }
+      .topbar { margin-bottom:28px; }
+      .top-note { display:none; }
+      .quiz-shell { border-radius:21px; }
+      .controls { align-items:stretch; flex-direction:column-reverse; }
+      .controls .btn { width:100%; }
+      .hint { text-align:center; }
+      .result-details { gap:6px; }
+      .stat strong { font-size:20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *,*:before,*:after { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">⌕</div><span>МИНИ-ЛАБОРАТОРИЯ</span></div>
+      <div class="top-note">Интерактивный тест · 2026</div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">✦ Проверь свою цифровую интуицию</div>
+      <h1>Цифровой <span>детектив</span></h1>
+      <p>Сможешь распознать фишинг, защитить аккаунт и не попасться на уловки в сети? Проверь, насколько уверенно ты ориентируешься в цифровом мире.</p>
+    </section>
+
+    <section class="quiz-shell">
+      <div id="startScreen" class="screen active start-card">
+        <div class="big-icon">⌘</div>
+        <h2>Готов раскрыть дело?</h2>
+        <p>Впереди 10 ситуаций из реальной цифровой жизни. Выбирай один ответ в каждом вопросе, получай короткие пояснения и узнай свой уровень цифровой грамотности.</p>
+        <div class="features">
+          <span class="feature">10 вопросов</span><span class="feature">Около 3 минут</span><span class="feature">Сохранение результата</span>
+        </div>
+        <div class="name-field">
+          <label for="participantName">Как тебя называть?</label>
+          <input id="participantName" type="text" maxlength="40" placeholder="Например, Алекс" autocomplete="name">
+        </div>
+        <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:20px">
+          <button class="btn btn-primary" id="startBtn">Начать расследование <span aria-hidden="true">→</span></button>
+          <button class="btn btn-secondary" id="openLeaderboardBtn">Рейтинг участников</button>
+        </div>
+        <div class="config-warning" id="configWarning">Для сохранения результатов сначала подключи свой проект Supabase (инструкция в README).</div>
+        <div class="save-status" id="startStatus" aria-live="polite"></div>
+      </div>
+
+      <div id="quizScreen" class="screen" aria-live="polite">
+        <div class="meta-row">
+          <div class="question-count">Вопрос <strong id="currentNumber">1</strong> / 10</div>
+          <div class="timer-label">Дело <span id="progressPercent">0%</span> раскрыто</div>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Прогресс теста" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="question-tag" id="questionTag">Кибербезопасность</div>
+        <h2 class="question-title" id="questionTitle"></h2>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback" role="status"></div>
+        <div class="controls">
+          <div class="hint" id="hint">Выбери наиболее безопасный вариант</div>
+          <button class="btn btn-primary" id="nextBtn" disabled>Следующий вопрос →</button>
+        </div>
+        <div class="toast" id="toast" aria-live="polite"></div>
+      </div>
+
+      <div id="resultScreen" class="screen result-card" aria-live="polite">
+        <div class="big-icon">✦</div>
+        <h2>Расследование завершено</h2>
+        <p class="result-subtitle">Вот что показала проверка твоей цифровой грамотности.</p>
+        <div class="result-score" id="scoreCircle">
+          <div class="score-inner"><span class="score-number" id="scorePercent">0%</span><span class="score-caption">результат</span></div>
+        </div>
+        <div class="result-category" id="resultCategory"></div>
+        <div class="result-details">
+          <div class="stat"><strong id="correctCount">0</strong><span>Верных ответов</span></div>
+          <div class="stat"><strong id="wrongCount">0</strong><span>Ошибок</span></div>
+          <div class="stat"><strong id="totalCount">10</strong><span>Всего вопросов</span></div>
+        </div>
+        <div class="recommendation">
+          <h3 id="recommendationTitle">Твоя следующая миссия</h3>
+          <p id="recommendationText"></p>
+        </div>
+        <div class="save-status" id="saveStatus" aria-live="polite">Результат будет сохранен в Supabase.</div>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="restartBtn">Пройти еще раз ↻</button>
+          <button class="btn btn-secondary" id="reviewBtn">Посмотреть ответы</button>
+          <button class="btn btn-secondary" id="resultLeaderboardBtn">Рейтинг участников</button>
+        </div>
+      </div>
+
+      <div id="leaderboardScreen" class="screen">
+        <div class="meta-row"><div class="question-count">Таблица результатов</div><div class="timer-label">Топ участников</div></div>
+        <h2 class="question-title" style="margin-bottom:8px">Рейтинг детективов</h2>
+        <p class="result-subtitle" style="text-align:left;margin:0">Лучшие результаты участников, сохраненные в базе данных.</p>
+        <div id="leaderboardList" class="leaderboard-list"><div class="empty-state">Загрузка рейтинга...</div></div>
+        <div class="controls">
+          <button class="btn btn-secondary" id="leaderboardBackBtn">← Назад</button>
+          <button class="btn btn-primary" id="refreshLeaderboardBtn">Обновить рейтинг ↻</button>
+        </div>
+      </div>
+      <div id="reviewScreen" class="screen">
+        <div class="meta-row"><div class="question-count">Разбор ответов</div><div class="timer-label" id="reviewScore"></div></div>
+        <div id="reviewList" class="answers"></div>
+        <div class="controls"><button class="btn btn-secondary" id="backResultBtn">← К результату</button><button class="btn btn-primary" id="reviewRestartBtn">Пройти заново ↻</button></div>
+      </div>
+    </section>
+    <div class="footer">Учебный проект · HTML, CSS и JavaScript · Ответы обрабатываются прямо в браузере</div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Вставь URL проекта и anon/publishable key из настроек Supabase.
+    // Никогда не используй service_role или secret key в браузере.
+    const SUPABASE_URL = "ВСТАВЬТЕ_URL_ПРОЕКТА";
+    const SUPABASE_ANON_KEY = "ВСТАВЬТЕ_ANON_ИЛИ_PUBLISHABLE_KEY";
+    const supabaseConfigured = SUPABASE_URL.startsWith("https://") &&
+      !SUPABASE_URL.includes("ВСТАВЬТЕ") && SUPABASE_ANON_KEY.length > 20 &&
+      !SUPABASE_ANON_KEY.includes("ВСТАВЬТЕ");
+    const supabase = supabaseConfigured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    // Вопросы хранятся в массиве объектов. correct — индекс правильного варианта ответа.
+    const questions = [
+      {
+        tag: "Пароли и аккаунты",
+        title: "Ты придумал пароль для нового аккаунта. Какой вариант надежнее?",
+        answers: ["qwerty2026", "Имя питомца и год рождения", "Длинная уникальная фраза с разными символами", "Один пароль для всех сайтов"],
+        correct: 2,
+        explanation: "Длинный уникальный пароль сложнее подобрать. Для разных сервисов лучше использовать разные пароли, а хранить их можно в менеджере паролей."
+      },
+      {
+        tag: "Фишинг",
+        title: "На почту пришло письмо: «Ваш аккаунт заблокируют через 10 минут! Срочно перейдите по ссылке». Что делать?",
+        answers: ["Сразу нажать на ссылку", "Проверить адрес отправителя и зайти на сайт самостоятельно", "Ответить и отправить пароль для проверки", "Переслать письмо всем знакомым"],
+        correct: 1,
+        explanation: "Срочность и запугивание — частые приемы фишинга. Не переходи по подозрительной ссылке: открой официальный сайт вручную и проверь уведомления там."
+      },
+      {
+        tag: "Публичный Wi-Fi",
+        title: "Ты подключился к бесплатному Wi-Fi в кафе. Как безопаснее войти в важный аккаунт?",
+        answers: ["Войти как обычно, сеть же бесплатная", "Отключить пароль на телефоне", "По возможности использовать мобильный интернет и включить двухфакторную защиту", "Передать данные аккаунта администратору кафе"],
+        correct: 2,
+        explanation: "Открытые сети могут быть небезопасны. Для важных операций лучше использовать мобильную сеть, HTTPS и двухфакторную аутентификацию."
+      },
+      {
+        tag: "Личные данные",
+        title: "Незнакомый сайт обещает подарок и просит номер карты, CVV и код из SMS. Твое действие?",
+        answers: ["Заполнить все поля ради подарка", "Ввести только CVV", "Закрыть сайт и ничего не отправлять", "Отправить данные, если сайт красиво оформлен"],
+        correct: 2,
+        explanation: "CVV и одноразовые коды нельзя сообщать посторонним. Легальный подарок не требует передачи секретных платежных данных."
+      },
+      {
+        tag: "Социальные сети",
+        title: "Друг прислал странное сообщение с просьбой срочно занять деньги. Что лучше сделать?",
+        answers: ["Сразу перевести деньги", "Уточнить у друга по другому каналу связи", "Отправить данные своей карты", "Проигнорировать любые сообщения от друзей навсегда"],
+        correct: 1,
+        explanation: "Аккаунт друга могли взломать. Позвони ему или напиши в другом мессенджере, чтобы проверить просьбу."
+      },
+      {
+        tag: "Файлы и загрузки",
+        title: "Ты скачал файл «Фото_договор.pdf.exe». Почему это подозрительно?",
+        answers: ["В названии два расширения, а .exe может запускать программу", "PDF-файлы всегда опасны", "Файл слишком коротко назван", "Это нормальный формат любого документа"],
+        correct: 0,
+        explanation: "Расширение .exe обозначает исполняемый файл. Маскировка под документ — распространенный способ заставить пользователя запустить вредоносную программу."
+      },
+      {
+        tag: "Цифровой след",
+        title: "Почему не стоит публиковать фото посадочного талона или билета целиком?",
+        answers: ["Фото может испортить качество камеры", "На билете могут быть личные данные и код бронирования", "Билеты нельзя фотографировать вообще", "Публикация всегда удаляет билет"],
+        correct: 1,
+        explanation: "Штрихкоды, QR-коды и номера бронирования могут дать доступ к данным поездки. Перед публикацией скрой их."
+      },
+      {
+        tag: "Проверка информации",
+        title: "Ты увидел громкую новость в одном неизвестном канале. Как проверить ее достоверность?",
+        answers: ["Сразу сделать репост", "Оценить количество комментариев", "Найти подтверждение в нескольких надежных источниках и проверить дату", "Поверить, если заголовок написан заглавными буквами"],
+        correct: 2,
+        explanation: "Сверяй информацию с независимыми надежными источниками, проверяй автора, дату и первоисточник. Эмоциональный заголовок не доказывает правдивость."
+      },
+      {
+        tag: "Защита устройств",
+        title: "Для чего нужны обновления операционной системы и приложений?",
+        answers: ["Только чтобы изменить внешний вид", "Чтобы исправлять ошибки и закрывать уязвимости безопасности", "Чтобы телефон работал медленнее", "Чтобы автоматически удалить все файлы"],
+        correct: 1,
+        explanation: "Обновления часто содержат исправления безопасности. Устанавливай их из официальных источников и не откладывай надолго."
+      },
+      {
+        tag: "Двухфакторная защита",
+        title: "Сервис предлагает включить двухфакторную аутентификацию (2FA). Что это дает?",
+        answers: ["Увеличивает скорость интернета", "Добавляет второй этап проверки при входе", "Позволяет забыть пароль навсегда", "Открывает аккаунт всем устройствам"],
+        correct: 1,
+        explanation: "Даже если пароль станет известен злоумышленнику, дополнительный фактор защиты затруднит вход в аккаунт."
+      }
+    ];
+
+    const screens = ["startScreen", "quizScreen", "resultScreen", "reviewScreen", "leaderboardScreen"];
+    let currentQuestion = 0;
+    let participantName = "";
+    let selectedAnswers = Array(questions.length).fill(null);
+    let locked = false;
+
+    const $ = (id) => document.getElementById(id);
+
+    function showScreen(id) {
+      screens.forEach(screenId => $(screenId).classList.toggle("active", screenId === id));
+    }
+
+    function startQuiz() {
+      const enteredName = $("participantName").value.trim().replace(/\s+/g, " ");
+      if (!enteredName) {
+        $("startStatus").textContent = "Введи имя или псевдоним перед началом теста.";
+        $("participantName").focus();
+        return;
+      }
+      participantName = enteredName.slice(0, 40);
+      $("startStatus").textContent = "";
+      currentQuestion = 0;
+      selectedAnswers = Array(questions.length).fill(null);
+      locked = false;
+      showScreen("quizScreen");
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const question = questions[currentQuestion];
+      $("currentNumber").textContent = currentQuestion + 1;
+      $("progressPercent").textContent = Math.round((currentQuestion / questions.length) * 100) + "%";
+      $("progressFill").style.width = (currentQuestion / questions.length * 100) + "%";
+      $("progressBar").setAttribute("aria-valuenow", Math.round(currentQuestion / questions.length * 100));
+      $("questionTag").textContent = question.tag;
+      $("questionTitle").textContent = question.title;
+      $("answers").innerHTML = "";
+      $("feedback").className = "feedback";
+      $("feedback").textContent = "";
+      $("toast").textContent = "";
+      $("hint").textContent = "Выбери один наиболее подходящий вариант";
+
+      question.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer";
+        button.setAttribute("aria-pressed", "false");
+        button.innerHTML = `<span class="answer-letter">${String.fromCharCode(65 + index)}</span><span class="answer-text"></span>`;
+        button.querySelector(".answer-text").textContent = answer;
+        button.addEventListener("click", () => selectAnswer(index));
+        $("answers").appendChild(button);
+      });
+
+      $("nextBtn").disabled = selectedAnswers[currentQuestion] === null;
+      $("nextBtn").textContent = currentQuestion === questions.length - 1 ? "Завершить тест ✓" : "Следующий вопрос →";
+
+      if (selectedAnswers[currentQuestion] !== null) {
+        selectAnswer(selectedAnswers[currentQuestion]);
+      }
+    }
+
+    function selectAnswer(index) {
+      if (locked) return;
+      selectedAnswers[currentQuestion] = index;
+      [...$("answers").children].forEach((button, i) => {
+        const selected = i === index;
+        button.classList.toggle("selected", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+      $("nextBtn").disabled = false;
+      $("toast").textContent = "";
+    }
+
+    function goNext() {
+      if (selectedAnswers[currentQuestion] === null) {
+        $("toast").textContent = "Сначала выбери ответ, чтобы продолжить.";
+        return;
+      }
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion();
+      } else {
+        // Итог нельзя показать, пока хотя бы один ответ не выбран.
+        if (selectedAnswers.some(answer => answer === null)) {
+          $("toast").textContent = "Ответь на все вопросы перед завершением.";
+          return;
+        }
+        showResult();
+      }
+    }
+
+    function getScore() {
+      return selectedAnswers.reduce((score, answer, index) =>
+        score + (answer === questions[index].correct ? 1 : 0), 0);
+    }
+
+    async function showResult() {
+      const score = getScore();
+      const percent = Math.round(score / questions.length * 100);
+      $("scorePercent").textContent = percent + "%";
+      $("scoreCircle").style.setProperty("--score-angle", (percent * 3.6) + "deg");
+      $("correctCount").textContent = score;
+      $("wrongCount").textContent = questions.length - score;
+      $("totalCount").textContent = questions.length;
+
+      let category, title, recommendation;
+      if (percent >= 90) {
+        category = "Цифровой эксперт";
+        title = "Продолжай быть на шаг впереди";
+        recommendation = "Отличный результат! Ты хорошо распознаешь цифровые риски и знаешь базовые правила защиты. Поддерживай привычку проверять источники, обновлять устройства и использовать уникальные пароли.";
+      } else if (percent >= 70) {
+        category = "Уверенный пользователь";
+        title = "Еще немного практики — и ты эксперт";
+        recommendation = "У тебя крепкая база. Повтори темы, в которых ошибся: особенно внимательно относись к подозрительным ссылкам, личным данным и просьбам о переводе денег.";
+      } else if (percent >= 40) {
+        category = "Цифровой исследователь";
+        title = "Есть что прокачать";
+        recommendation = "Ты уже знаешь некоторые правила, но в сети встречаются хитрые ловушки. Начни с надежных паролей, двухфакторной защиты и проверки отправителей перед переходом по ссылкам.";
+      } else {
+        category = "Новичок цифрового мира";
+        title = "Самое время усилить защиту";
+        recommendation = "Не переживай: цифровой безопасности можно научиться. Не сообщай коды и данные карты, не открывай сомнительные вложения и проверяй важные сообщения через официальные каналы.";
+      }
+
+      $("resultCategory").textContent = category;
+      $("recommendationTitle").textContent = title;
+      $("recommendationText").textContent = recommendation;
+      showScreen("resultScreen");
+      await saveResult(score, percent, category);
+    }
+
+    async function saveResult(score, percent, category) {
+      const status = $("saveStatus");
+      if (!supabaseConfigured) {
+        status.textContent = "Supabase не подключен. Заполни URL и ключ в index.html по инструкции README.";
+        status.style.color = "#ffd69a";
+        return;
+      }
+      status.textContent = "Сохраняем результат...";
+      status.style.color = "var(--muted)";
+      const { error } = await supabase.from("test_results").insert([{
+        participant_name: participantName,
+        correct_answers: score,
+        total_questions: questions.length,
+        percentage: percent,
+        result_category: category
+      }]);
+      if (error) {
+        console.error("Supabase save error:", error);
+        status.textContent = "Не удалось сохранить результат. Проверь подключение и RLS-политики.";
+        status.style.color = "var(--danger)";
+      } else {
+        status.textContent = "Результат успешно сохранен в Supabase.";
+        status.style.color = "var(--success)";
+      }
+    }
+
+    async function loadLeaderboard() {
+      const list = $("leaderboardList");
+      list.innerHTML = '<div class="empty-state">Загрузка рейтинга...</div>';
+      if (!supabaseConfigured) {
+        list.innerHTML = '<div class="empty-state">Сначала подключи Supabase в начале index.html.</div>';
+        return;
+      }
+      const { data, error } = await supabase.from("test_results")
+        .select("participant_name, correct_answers, total_questions, percentage, result_category, created_at")
+        .order("percentage", { ascending: false })
+        .order("created_at", { ascending: true })
+        .limit(20);
+      if (error) {
+        console.error("Supabase leaderboard error:", error);
+        list.innerHTML = '<div class="empty-state">Не удалось загрузить рейтинг. Проверь таблицу и разрешение SELECT.</div>';
+        return;
+      }
+      if (!data.length) {
+        list.innerHTML = '<div class="empty-state">Пока нет результатов. Стань первым участником!</div>';
+        return;
+      }
+      list.innerHTML = "";
+      data.forEach((row, index) => {
+        const item = document.createElement("div");
+        item.className = "leader-row";
+        const place = document.createElement("div");
+        place.className = "leader-place";
+        place.textContent = index + 1;
+        const info = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "leader-name";
+        name.textContent = row.participant_name;
+        const date = document.createElement("div");
+        date.className = "leader-date";
+        date.textContent = `${row.result_category} · ${new Date(row.created_at).toLocaleDateString("ru-RU")}`;
+        info.append(name, date);
+        const score = document.createElement("div");
+        score.className = "leader-score";
+        score.textContent = `${row.percentage}%`;
+        item.append(place, info, score);
+        list.appendChild(item);
+      });
+    }
+
+    function openLeaderboard() {
+      showScreen("leaderboardScreen");
+      loadLeaderboard();
+    }
+
+    function showReview() {
+      $("reviewList").innerHTML = "";
+      $("reviewScore").textContent = `${getScore()} из ${questions.length} верно`;
+      questions.forEach((question, index) => {
+        const chosen = selectedAnswers[index];
+        const correct = chosen === question.correct;
+        const card = document.createElement("div");
+        card.className = "recommendation";
+        const heading = document.createElement("h3");
+        heading.textContent = `${index + 1}. ${question.title}`;
+        const answerLine = document.createElement("p");
+        answerLine.style.marginTop = "8px";
+        answerLine.textContent = `Твой ответ: ${question.answers[chosen]}`;
+        answerLine.style.color = correct ? "#d9ffad" : "#ffc0c5";
+        const correctLine = document.createElement("p");
+        correctLine.style.marginTop = "5px";
+        correctLine.textContent = `Правильный ответ: ${question.answers[question.correct]}`;
+        const explanation = document.createElement("p");
+        explanation.style.marginTop = "8px";
+        explanation.textContent = question.explanation;
+        card.append(heading, answerLine, correctLine, explanation);
+        $("reviewList").appendChild(card);
+      });
+      showScreen("reviewScreen");
+    }
+
+    $("startBtn").addEventListener("click", startQuiz);
+    $("nextBtn").addEventListener("click", goNext);
+    $("restartBtn").addEventListener("click", () => showScreen("startScreen"));
+    $("reviewRestartBtn").addEventListener("click", () => showScreen("startScreen"));
+    $("reviewBtn").addEventListener("click", showReview);
+    $("backResultBtn").addEventListener("click", () => showScreen("resultScreen"));
+    $("openLeaderboardBtn").addEventListener("click", openLeaderboard);
+    $("resultLeaderboardBtn").addEventListener("click", openLeaderboard);
+    $("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
+    $("leaderboardBackBtn").addEventListener("click", () => showScreen("startScreen"));
+    $("participantName").addEventListener("input", () => { $("startStatus").textContent = ""; });
+    if (supabaseConfigured) $("configWarning").textContent = "Supabase подключен: результаты будут сохраняться после каждого прохождения.";
+  </script>
+</body>
+</html>
