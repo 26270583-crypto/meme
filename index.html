@@ -263,14 +263,10 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Вставь URL проекта и anon/publishable key из настроек Supabase.
-    // Никогда не используй service_role или secret key в браузере.
-    const SUPABASE_URL = "ВСТАВЬТЕ_URL_ПРОЕКТА";
-    const SUPABASE_ANON_KEY = "ВСТАВЬТЕ_ANON_ИЛИ_PUBLISHABLE_KEY";
-    const supabaseConfigured = SUPABASE_URL.startsWith("https://") &&
-      !SUPABASE_URL.includes("ВСТАВЬТЕ") && SUPABASE_ANON_KEY.length > 20 &&
-      !SUPABASE_ANON_KEY.includes("ВСТАВЬТЕ");
-    const supabase = supabaseConfigured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    const SUPABASE_URL = "https://psxltuwpjodiaerauuzv.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_fVeonly7v6rmpSe1Lvbc3w_GI1U289E";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
     // Вопросы хранятся в массиве объектов. correct — индекс правильного варианта ответа.
     const questions = [

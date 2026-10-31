@@ -19,20 +19,17 @@
 ## 3. Получи URL и публичный ключ
 В настройках проекта найди Project URL и anon / publishable key (раздел API Keys или Connect).
 
-## 4. Подключи сайт
-Открой `index.html` в редакторе и найди:
-```js
-const SUPABASE_URL = "ВСТАВЬТЕ_URL_ПРОЕКТА";
-const SUPABASE_ANON_KEY = "ВСТАВЬТЕ_ANON_ИЛИ_PUBLISHABLE_KEY";
-```
-Замени текст внутри кавычек своими значениями. URL выглядит примерно так: `https://abcdefgh.supabase.co`.
+## 4. Подключение
+В этой версии `index.html` уже подключен к созданному проекту Supabase: Project URL и публичный publishable key добавлены в JavaScript. Отдельно менять их не нужно.
 
-ВАЖНО: не вставляй `service_role`, `secret` или secret key в HTML/JavaScript. Используй только anon/publishable key. Доступ ограничен RLS-политиками.
+ВАЖНО: в браузерном коде используется только publishable key. Он предназначен для публичного клиента; безопасность таблицы обеспечивают RLS-политики. Никогда не добавляй в HTML/JavaScript `service_role`, `secret` или secret key.
 
 ## 5. Запусти сайт
 Для ES-модулей открой папку через локальный сервер, например VS Code + расширение Live Server, или размести на хостинге. Интернет нужен для связи с Supabase.
 
 После прохождения результат появится в Table Editor -> test_results. Кнопка «Рейтинг участников» загрузит топ-20 результатов.
+
+Если сайт размещен на GitHub Pages или другом хостинге, загружай обновленный `index.html` из этой папки. Для локальной проверки запускай через Live Server, а не открывай файл двойным щелчком.
 
 ## Поля таблицы
 `participant_name` — имя/псевдоним; `correct_answers` — правильные ответы; `total_questions` — число вопросов; `percentage` — процент; `result_category` — категория; `created_at` — дата и время.
